@@ -1,69 +1,49 @@
+from geometry_msgs.msg import TransformStamped
+
 import rclpy
 from rclpy.node import Node
 
-from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolicy
-from rclpy.qos import QoSProfile
-
-from nav_msgs.msg import Odometry
-from tf2_ros import TransformBroadcaster, TransformStamped
+from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
 
-class MaptoOdomTFPublisher(Node):
+class StaticFramePublisher(Node):
+    """
+    Broadcast transforms that never change: odom to base_footprint.
+
+    Since we do not actually implement localization algorithm here, only receiving nodes.
+    """
 
     def __init__(self):
-        rclpy.init()
-        super().__init__('map_to_odom_tf2_publisher')
+        super().__init__('odom_to_base_footprint_tf2_broadcaster')
 
-        qos_profile = QoSProfile(
-            durability=QoSDurabilityPolicy.VOLATILE,
-            reliability=QoSReliabilityPolicy.RELIABLE,
-            history=QoSHistoryPolicy.KEEP_LAST,
-            depth=10)
+        self._tf_publisher = StaticTransformBroadcaster(self)
 
-        self.broadcaster = TransformBroadcaster(self, qos=qos_profile)
-        self.nodeName = self.get_name()
-        self.get_logger().info("{0} started".format(self.nodeName))
+        # Publish static transforms once at startup
+        self.make_transforms()
 
-        # message declarations
-        self.odom_trans = TransformStamped()
-        self.odom_trans.header.frame_id = 'locobot/map'
-        self.odom_trans.child_frame_id = 'locobot/odom'
+    def make_transforms(self):
+        static_transformStamped = TransformStamped()
 
-        self.subscription = self.create_subscription(
-            Odometry, 'odom', self.listener_callback, 10)
+        static_transformStamped.header.stamp = self.get_clock().now().to_msg()
+        static_transformStamped.header.frame_id = 'map'
+        static_transformStamped.child_frame_id = 'odom'
+        static_transformStamped.transform.translation.x = 0.0
+        static_transformStamped.transform.translation.y = 0.0
+        static_transformStamped.transform.translation.z = 0.0
+        static_transformStamped.transform.rotation.x = 0.0
+        static_transformStamped.transform.rotation.y = 0.0
+        static_transformStamped.transform.rotation.z = 0.0
+        static_transformStamped.transform.rotation.w = 1.0
 
-        self.subscription  # prevent unused variable warning
-
-    def listener_callback(self, data):
-        # update transform
-        now = self.get_clock().now()
-        self.odom_trans.header.stamp = now.to_msg()
-
-        self.odom_trans.transform.translation.x = data.pose.pose.position.x
-        self.odom_trans.transform.translation.y = data.pose.pose.position.y
-        self.odom_trans.transform.translation.z = data.pose.pose.position.z
-        self.odom_trans.transform.rotation.x = data.pose.pose.orientation.x
-        self.odom_trans.transform.rotation.y = data.pose.pose.orientation.y
-        self.odom_trans.transform.rotation.z = data.pose.pose.orientation.z
-        self.odom_trans.transform.rotation.w = data.pose.pose.orientation.w
-
-        # transform
-        self.broadcaster.sendTransform(self.odom_trans)
+        self._tf_publisher.sendTransform(static_transformStamped)
 
 
 def main():
-    node = MaptoOdomTFPublisher()
-
+    rclpy.init()
+    node = StaticFramePublisher()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
 
-    node.destroy_node()
     rclpy.shutdown()
-
-
-
-
-if __name__ == '__main__':
-    main()
