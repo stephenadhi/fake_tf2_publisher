@@ -6,11 +6,16 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
     # Create the launch configuration variables
+    use_sim_time = LaunchConfiguration('use_sim_time')
     namespace = LaunchConfiguration('namespace')
     map_to_odom = LaunchConfiguration('map_to_odom')
     odom_to_base = LaunchConfiguration('odom_to_base')
 
     # declare argument commands
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='True',
+        description='Use simulation/Gazebo clock')
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace', default_value='',
         description='Top-level namespace')
@@ -27,6 +32,7 @@ def generate_launch_description():
                                          name='map_to_odom_tf2',
                                          namespace=namespace,
                                          condition=IfCondition(map_to_odom),
+                                         parameters=[{'use_sim_time': use_sim_time}],
                                          )
 
     # fake odom to base_footprint tf2 publisher
@@ -35,10 +41,12 @@ def generate_launch_description():
                                          name='odom_to_base_footprint_tf2',
                                          namespace=namespace,
                                          condition=IfCondition(odom_to_base),
+                                         parameters=[{'use_sim_time': use_sim_time}],
                                          )
 
 
     return LaunchDescription([
+        declare_use_sim_time_cmd,
         declare_namespace_cmd,
         declare_map_to_odom_cmd,
         declare_odom_to_base_cmd,
