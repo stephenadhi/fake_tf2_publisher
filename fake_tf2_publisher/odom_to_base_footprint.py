@@ -12,7 +12,7 @@ class MaptoOdomTFPublisher(Node):
 
     def __init__(self):
         rclpy.init()
-        super().__init__('map_to_odom_tf2_publisher')
+        super().__init__('odom_to_base_footprint_tf2_publisher')
 
         qos_profile = QoSProfile(
             durability=QoSDurabilityPolicy.VOLATILE,

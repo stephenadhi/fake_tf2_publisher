@@ -14,7 +14,7 @@ class StaticFramePublisher(Node):
     """
 
     def __init__(self):
-        super().__init__('odom_to_base_footprint_tf2_broadcaster')
+        super().__init__('map_to_odom_tf2_broadcaster')
 
         self._tf_publisher = StaticTransformBroadcaster(self)
 
