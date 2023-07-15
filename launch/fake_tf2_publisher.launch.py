@@ -17,13 +17,13 @@ def generate_launch_description():
         default_value='True',
         description='Use simulation/Gazebo clock')
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace', default_value='',
+        'namespace', default_value='locobot',
         description='Top-level namespace')
     declare_map_to_odom_cmd = DeclareLaunchArgument(
         'map_to_odom', default_value='False',
         description='Whether to publish map to odom transform')
     declare_odom_to_base_cmd = DeclareLaunchArgument(
-        'namespace', default_value='False',
+        'odom_to_base', default_value='True',
         description='Whether to publish odom to base transform')
 
     # fake map to odom tf2 publisher

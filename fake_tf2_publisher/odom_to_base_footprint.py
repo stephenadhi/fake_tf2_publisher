@@ -26,8 +26,8 @@ class MaptoOdomTFPublisher(Node):
 
         # message declarations
         self.odom_trans = TransformStamped()
-        self.odom_trans.header.frame_id = 'odom'
-        self.odom_trans.child_frame_id = 'base_footprint'
+        self.odom_trans.header.frame_id = 'locobot/odom'
+        self.odom_trans.child_frame_id = 'locobot/base_footprint'
 
         self.subscription = self.create_subscription(
             Odometry, 'odom', self.listener_callback, 10)
